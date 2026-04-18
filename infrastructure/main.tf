@@ -1,8 +1,3 @@
-# - [x] Storage Account con Hierarchical Namespace habilitado.
-# - [x] Contenedores: bronze, silver, gold con ACLs por capa.
-# - [ ] Lifecycle policy: bronze data > 90 días → Cool tier; > 365 días → Archive.
-# - [ ] Private Endpoint para acceso seguro desde Synapse y Data Factory.
-
 provider "azurerm" {
 	features {
     resource_group {
@@ -25,28 +20,9 @@ resource "azurerm_storage_account" "datalake" {
 	account_replication_type = "LRS"
 	account_kind             = "StorageV2"
 	is_hns_enabled           = "true" # activar el hierarchical namespace
-
-  # TODO: politicas de retención (delete_retencion_policy)
 }
 
-# resource "azurerm_storage_container" "bronze" {
-# 	name                  = "bronze"
-# 	storage_account_id    = azurerm_storage_account.datalake.id
-# 	container_access_type = "private"
-# }
-#
-# resource "azurerm_storage_container" "silver" {
-#   name                  = "silver"
-#   storage_account_id    = azurerm_storage_account.datalake.id
-#   container_access_type = "private"
-# }
-#
-# resource "azurerm_storage_container" "gold" {
-# 	name                  = "gold"
-# 	storage_account_id    = azurerm_storage_account.datalake.id
-# 	container_access_type = "private"
-# }
-
+## contenedores para la arquitectura medallón
 resource "azurerm_storage_data_lake_gen2_filesystem" "bronze" {
   name               = "bronze"
   storage_account_id = azurerm_storage_account.datalake.id
@@ -60,4 +36,23 @@ resource "azurerm_storage_data_lake_gen2_filesystem" "silver" {
 resource "azurerm_storage_data_lake_gen2_filesystem" "gold" {
   name               = "gold"
   storage_account_id = azurerm_storage_account.datalake.id
+}
+
+## Lifecycle policy para contenedor bronce
+resource "azurerm_storage_management_policy" "lifecycle" {
+  storage_account_id = azurerm_storage_account.datalake.id
+  rule {
+    name   = "bronze-policy"
+    enable = true
+    filters {
+      prefix_match = ["bronze/"]
+      blob_types   = ["blockBlob"]
+    }
+    actions {
+      base_blob {
+        tier_to_cool_after_days_since_modification_greater_than    = 90
+        tier_to_archive_after_days_since_modification_greater_than = 365
+      }
+    }
+  }
 }

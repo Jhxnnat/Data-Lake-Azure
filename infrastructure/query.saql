@@ -1,0 +1,35 @@
+-- computar el valor agregado por minuto con TumblingWindow
+-- y generar alertas si la temperatura para del umbral de 45 grados.
+
+-- silver-output and evh-input-simulation come from resources stream_analytics_stream...
+-- on stream-analytics.tf
+
+-- escribir resultados agregados en la capa silver
+SELECT
+    System.Timestamp() AS window_end,
+    device_id,
+    AVG(temperature) AS avg_temperature,
+    MAX(temperature) AS max_temperature,
+    AVG(humidity) AS avg_humidity,
+    COUNT(*) as total_events_in_minute
+INTO
+    [silver-output]
+FROM
+    [evh-input-simulation] TIMESTAMP BY timestamp
+GROUP BY
+    device_id,
+    TumblingWindow(minute, 1)
+
+-- escribir en la tabla de alertas si toca
+SELECT
+    System.Timestamp() AS event_time,
+    device_id,
+    temperature,
+    status
+INTO
+    [silver-alert-output]
+FROM
+    [evh-input-simulation] TIMESTAMP BY timestamp
+WHERE
+    temperature > 45.0
+
