@@ -25,7 +25,8 @@ resource "azurerm_stream_analytics_stream_input_eventhub" "asa_inputs" {
   shared_access_policy_name = azurerm_eventhub_authorization_rule.evh_auth.name
 
   serialization {
-    type = "Json"
+    type     = "Json"
+    encoding = "UTF8"
   }
 }
 
@@ -42,8 +43,9 @@ resource "azurerm_stream_analytics_output_blob" "asa_output" {
   time_format               = "HH"
 
   serialization {
-    type            = "Json"
-    format          = "LineSeparated"
+    type     = "Json"
+    format   = "LineSeparated"
+    encoding = "UTF8"
   }
 }
 
@@ -60,8 +62,9 @@ resource "azurerm_stream_analytics_output_blob" "asa_output_alerts" {
   time_format               = "HH"
 
   serialization {
-    type            = "Json"
-    format          = "LineSeparated"
+    type     = "Json"
+    format   = "LineSeparated"
+    encoding = "UTF8"
   }
 }
 

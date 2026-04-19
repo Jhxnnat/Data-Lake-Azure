@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+# TODO: make retry connections to event hubs
+# in case stream analytincs job is not running before
+# starting the generator.
+
 """IoT telemetry event generator for local testing or Azure Event Hubs."""
 
 from __future__ import annotations
@@ -67,10 +71,13 @@ def generate_event(
 		# Inject occasional spikes to trigger alert stream (temperature > 45.0).
 		temperature = rng.uniform(46.0, 55.0)
 
+	status = "alert" if temperature > ALERT_THRESHOLD else "ok"
+
 	return {
 		"device_id": device_id,
 		"temperature": round(temperature, 2),
 		"humidity": round(state.humidity, 2),
+		"status": status,
 		"timestamp": utc_timestamp(),
 	}
 
@@ -178,7 +185,7 @@ def create_eventhub_client(connection_string: str, eventhub_name: str) -> Any:
 		eventhub_module = importlib.import_module("azure.eventhub")
 	except ImportError as exc:
 		raise RuntimeError(
-			"Missing dependency 'azure-eventhub'. Install with: pip install azure-eventhub"
+			"Missing dependency 'azure-eventhub'"
 		) from exc
 
 	producer_client_class = getattr(eventhub_module, "EventHubProducerClient", None)
@@ -196,7 +203,7 @@ def get_event_data_class() -> Any:
 		eventhub_module = importlib.import_module("azure.eventhub")
 	except ImportError as exc:
 		raise RuntimeError(
-			"Missing dependency 'azure-eventhub'. Install with: pip install azure-eventhub"
+			"Missing dependency 'azure-eventhub'"
 		) from exc
 
 	event_data_class = getattr(eventhub_module, "EventData", None)

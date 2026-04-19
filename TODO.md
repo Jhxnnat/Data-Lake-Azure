@@ -8,9 +8,9 @@
 
 ## Event Hubs + Stream Analytics
 - [x] Event Hubs Namespace con Hub de 4 particiones, retención 7 días.
-- [ ] Script Python generador de eventos (simula telemetría IoT cada segundo).
-- [ ] Stream Analytics Job: consumir Event Hubs → calcular promedio/máximo por ventana de 1 minuto → escribir resultados en Silver Layer.
-- [ ] Alerta: cuando valor métrica excede umbral → escribir en tabla de alertas.
+- [x] Script Python generador de eventos (simula telemetría IoT cada segundo).
+- [x] Stream Analytics Job: consumir Event Hubs → calcular promedio/máximo por ventana de 1 minuto → escribir resultados en Silver Layer.
+- [x] Alerta: cuando valor métrica excede umbral → escribir en tabla de alertas.
 
 ## Azure Synapse Analytics
 - [ ] Synapse Workspace con Serverless SQL Pool apuntando a Gold Layer.
